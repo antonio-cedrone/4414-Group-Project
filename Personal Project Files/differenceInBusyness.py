@@ -42,12 +42,12 @@ def busyness_difference(start_year, start_month, end_year, end_month):
             end_airport_traffic = total_node_throughput(end_graph, airport)
 
             if (start_airport_traffic != 0) & (end_airport_traffic != 0):
-                changeInAirportBusyness = 100 * ((end_airport_traffic - start_airport_traffic) / start_airport_traffic)
-                change_in_busyness[airport] = changeInAirportBusyness
+                change_in_busyness[airport] = 100 * ((end_airport_traffic - start_airport_traffic)
+                                                     / start_airport_traffic)
 
-    sorted_changeInBusyness = sorted(change_in_busyness.items(), key=lambda item: item[1], reverse=True)
-    print(sorted_changeInBusyness)
+    sorted_change_in_busyness = sorted(change_in_busyness.items(), key=lambda item: item[1], reverse=True)
+    print(sorted_change_in_busyness)
 
-    for airport, change in sorted_changeInBusyness:
+    for airport, change in sorted_change_in_busyness:
         if change > 1:
             print(f"{airport}: {change}")

@@ -35,7 +35,7 @@ def node_impact_all_nodes(start_year, start_month, end_year, end_month):
     end_g = make_graph(end_year, end_month)
 
     # variable to hold throughput for nodes
-    throughput = []
+    throughput = {}
 
     # iterate over start graph nodes
     for node in start_g.nodes:
@@ -46,81 +46,57 @@ def node_impact_all_nodes(start_year, start_month, end_year, end_month):
             end_throughput_v = single_node_throughput(end_g, node)
 
             # add the iata code and the start and end throughput to the throughput variable
-            throughput.append(
-                (node, {"start_in": start_throughput_v.get("in"), "start_out": start_throughput_v.get("out"),
-                        "change_in": (end_throughput_v.get("in") - start_throughput_v.get("in")),
-                        "change_out": (end_throughput_v.get("out")) - start_throughput_v.get("out")}))
+            throughput[node] = {"start_in": start_throughput_v.get("in"), "start_out": start_throughput_v.get("out"),
+                                "change_in": (end_throughput_v.get("in") - start_throughput_v.get("in")),
+                                "change_out": (end_throughput_v.get("out")) - start_throughput_v.get("out")}
 
     # return the throughput for the nodes
     return throughput
 
 
 if __name__ == "__main__":
-    # section 5.4
+    # section 5.3
     # get the node impact of every year from April to June
-    result = node_impact_all_nodes(2017, 4, 2017, 6)
-    result2 = node_impact_all_nodes(2018, 4, 2018, 6)
-    result3 = node_impact_all_nodes(2019, 4, 2019, 6)
-    result4 = node_impact_all_nodes(2020, 4, 2020, 6)
+    impact2018 = node_impact_all_nodes(2018, 4, 2018, 6)
+    impact2019 = node_impact_all_nodes(2019, 4, 2019, 6)
+    impact2020 = node_impact_all_nodes(2020, 4, 2020, 6)
 
     sorted_airports = []
 
-    for r2020 in result4:
-        for r2018 in result2:
-            if r2020[0] == r2018[0]:
-                for r2019 in result3:
-                    if r2020[0] == r2019[0]:
-                        for r2017 in result:
-                            if r2020[0] == r2017[0]:
-                                # confirm it is the same airport and then make sure that none of the starting values are
-                                # 0 to avoid division by 0
-                                if ((r2017[1].get('start_in') > 0 and r2017[1].get('start_out') > 0
-                                     and r2018[1].get('start_in') > 0 and r2018[1].get('start_out') > 0)
-                                        and r2019[1].get('start_in') > 0 and r2019[1].get('start_out') > 0
-                                        and r2020[1].get('start_in') > 0 and r2020[1].get('start_out') > 0):
-                                    # add the sorted start incoming and outgoing passengers as well as the percentage
-                                    # they change in June
-                                    sorted_airports.append((r2017[0],
-                                                            int(r2017[1].get('start_in')),
-                                                            int(r2017[1].get('start_out')),
-                                                            round(
-                                                                r2017[1].get('change_in') / r2017[1].get(
-                                                                    'start_in') * 100,
-                                                                1),
-                                                            round(r2017[1].get('change_out') / r2017[1].get(
-                                                                'start_out') * 100, 1),
-                                                            int(r2018[1].get('start_in')),
-                                                            int(r2018[1].get('start_out')),
-                                                            round(
-                                                                r2018[1].get('change_in') / r2018[1].get(
-                                                                    'start_in') * 100,
-                                                                1),
-                                                            round(r2018[1].get('change_out') / r2018[1].get(
-                                                                'start_out') * 100, 1),
-                                                            int(r2019[1].get('start_in')),
-                                                            int(r2019[1].get('start_out')),
-                                                            round(
-                                                                r2019[1].get('change_in') / r2019[1].get(
-                                                                    'start_in') * 100,
-                                                                1),
-                                                            round(r2019[1].get('change_out') / r2019[1].get(
-                                                                'start_out') * 100, 1),
-                                                            int(r2020[1].get('start_in')),
-                                                            int(r2020[1].get('start_out')),
-                                                            round(
-                                                                r2020[1].get('change_in') / r2020[1].get(
-                                                                    'start_in') * 100,
-                                                                1),
-                                                            round(r2020[1].get('change_out') / r2020[1].get(
-                                                                'start_out') * 100, 1)))
-                                break
-                        break
-                break
+    for iata, throughput2020 in impact2020.items():
+        throughput2018 = impact2018.get(iata)
+        throughput2019 = impact2019.get(iata)
 
-    # sort by total change
-    r = sorted(sorted_airports, key=lambda x: x[15] + x[16], reverse=True)
+        # confirm that there is data for this time and that it is not zero
+        if throughput2018 is None or throughput2019 is None or throughput2018.get(
+                'start_in') == 0 or throughput2018.get('start_out') == 0 or throughput2019.get(
+                'start_in') == 0 or throughput2019.get('start_out') == 0 or throughput2020.get(
+                'start_in') == 0 or throughput2020.get('start_out') == 0:
+            continue
+
+        # add the sorted start incoming and outgoing passengers as well as the percentage
+        # they change in June
+        sorted_airports.append(
+            (iata,
+             int(throughput2018.get('start_in')),
+             int(throughput2018.get('start_out')),
+             round(throughput2018.get('change_in') / throughput2018.get('start_in') * 100, 1),
+             round(throughput2018.get('change_out') / throughput2018.get('start_out') * 100, 1),
+             int(throughput2019.get('start_in')),
+             int(throughput2019.get('start_out')),
+             round(throughput2019.get('change_in') / throughput2019.get('start_in') * 100, 1),
+             round(throughput2019.get('change_out') / throughput2019.get('start_out') * 100, 1),
+             int(throughput2020.get('start_in')),
+             int(throughput2020.get('start_out')),
+             round(throughput2020.get('change_in') / throughput2020.get('start_in') * 100, 1),
+             round(throughput2020.get('change_out') / throughput2020.get('start_out') * 100, 1)))
+
+    # sort by total change in 2020
+    impactData = sorted(sorted_airports, key=lambda x: x[11] + x[12], reverse=True)
 
     # print the nodes in order of most changed from April 2020 to June 2020
-    for j in r:
-        print(j[0], "&", j[5], "&", j[6], "&", j[7], "&", j[8], "&", j[9], "&", j[10],
-              "&", j[11], "&", j[12], "&", j[13], "&", j[14], "&", j[15], "&", j[16])
+    # output in this format for easy entry into latex
+    for airport in impactData:
+        print(airport[0], "&", airport[1], "&", airport[2], "&", airport[3], "&",
+              airport[4], "&", airport[5], "&", airport[6], "&", airport[7], "&",
+              airport[8], "&", airport[9], "&", airport[10], "&", airport[11], "&", airport[12])
